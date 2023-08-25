@@ -1,0 +1,647 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model motivos {
+  id                    Int                  @id @default(autoincrement())
+  descricao             String?              @db.VarChar(50)
+  configuracaoClienteId Int?
+  codigo                String?              @db.VarChar(20)
+  nome                  String?              @db.VarChar(20)
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  task                  task[]
+}
+
+model times {
+  id         Int       @id @default(autoincrement())
+  descricao  String?   @db.VarChar(50)
+  metasId    Int?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  Users      Users[]
+  metas      metas?    @relation(fields: [metasId], references: [id])
+}
+
+model metas {
+  id                    Int                  @id @default(autoincrement())
+  descricao             String?              @db.VarChar(50)
+  status                String?              @db.VarChar(50)
+  valor_meta            Decimal?             @db.Decimal(10, 2)
+  valor_alcancado       Decimal?             @db.Decimal(10, 2)
+  data_inicial          DateTime?
+  data_final            DateTime?
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  configuracaoClienteId Int?
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  taks                  task[]
+  times                 times[]
+}
+
+model tipo_projeto {
+  id         Int       @id @default(autoincrement())
+  descricao  String?   @db.VarChar(50)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  projeto    projeto[]
+}
+
+model campanha_mkt {
+  id                    Int                  @id @default(autoincrement())
+  titulo                String?              @db.VarChar(50)
+  html_body             String?              @db.VarChar(10000)
+  configuracaoClienteId Int?
+  tipo_msgId            Int?
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  data_final            DateTime?
+  data_inicial          DateTime?
+  status                String?              @db.VarChar(10)
+  campanha_lista        campanha_lista[]
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  tipo_msg              tipo_msg?            @relation(fields: [tipo_msgId], references: [id])
+  email                 email[]
+  sms                   sms[]
+}
+
+model lista_mkt {
+  id                    Int                     @id @default(autoincrement())
+  titulo                String?                 @db.VarChar(50)
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @updatedAt
+  campanha_lista        campanha_lista[]
+  lista_contato_cliente lista_contato_cliente[]
+}
+
+model lista_contato_cliente {
+  id          Int        @id @default(autoincrement())
+  created_at  DateTime?  @default(now())
+  updated_at  DateTime?  @updatedAt
+  lista_mktId Int?
+  contactsId  Int?
+  clienteId   Int?
+  cliente     cliente?   @relation(fields: [clienteId], references: [id])
+  Contacts    Contacts?  @relation(fields: [contactsId], references: [id])
+  lista_mkt   lista_mkt? @relation(fields: [lista_mktId], references: [id])
+}
+
+model campanha_lista {
+  id             Int           @id @default(autoincrement())
+  updated_at     DateTime?     @updatedAt
+  campanha_mktId Int?
+  lista_mktId    Int?
+  created_at     DateTime?     @default(now())
+  campanha_mkt   campanha_mkt? @relation(fields: [campanha_mktId], references: [id])
+  lista_mkt      lista_mkt?    @relation(fields: [lista_mktId], references: [id])
+}
+
+model formulario_dinamico {
+  id                    Int                  @id @default(autoincrement())
+  publico               Boolean?
+  url_formulario        String?              @db.VarChar(250)
+  title                 String?              @db.VarChar(50)
+  json                  Json?
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  projetoId             Int?
+  processoId            Int?
+  configuracaoClienteId Int?
+  nome_campanha         String?              @db.VarChar(255)
+  link_redirect         String?              @db.VarChar(800)
+  logo                  String?              @db.VarChar(500)
+  logo_width            String?              @db.VarChar(10)
+  logo_height           String?              @db.VarChar(10)
+  form_ask              form_ask[]
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  processo              processo?            @relation(fields: [processoId], references: [id])
+  projeto               projeto?             @relation(fields: [projetoId], references: [id])
+}
+
+model form_ask {
+  id                    Int                  @id @default(autoincrement())
+  formulario_dinamicoId Int?
+  json                  Json?
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  formulario_dinamico   formulario_dinamico? @relation(fields: [formulario_dinamicoId], references: [id])
+}
+
+model projeto {
+  id                    Int                   @id @default(autoincrement())
+  title                 String?               @db.VarChar(50)
+  created_at            DateTime?             @default(now())
+  updated_at            DateTime?             @updatedAt
+  tipo_projetoId        Int?
+  operador              String?               @db.VarChar(150)
+  configuracaoClienteId Int?
+  formulario_dinamico   formulario_dinamico[]
+  processo              processo[]
+  configuracaoCliente   configuracaoCliente?  @relation(fields: [configuracaoClienteId], references: [id])
+  tipo_projeto          tipo_projeto?         @relation(fields: [tipo_projetoId], references: [id])
+}
+
+model processo {
+  id                  Int                   @id @default(autoincrement())
+  title               String?               @db.VarChar(500)
+  color               String?               @db.VarChar(10)
+  etapa               Int?
+  created_at          DateTime?             @default(now())
+  updated_at          DateTime?             @updatedAt
+  projetoId           Int?
+  operador            String?               @db.VarChar(150)
+  formulario_dinamico formulario_dinamico[]
+  projeto             projeto?              @relation(fields: [projetoId], references: [id])
+  task                task[]
+}
+
+model task_produto {
+  id        Int      @id @default(autoincrement())
+  taskId    Int?
+  produtoId Int?
+  produto   produto? @relation(fields: [produtoId], references: [id])
+  task      task?    @relation(fields: [taskId], references: [id])
+}
+
+model task {
+  id                  Int            @id @default(autoincrement())
+  contato_nome        String?        @db.VarChar(100)
+  contato_numero      String?        @db.VarChar(20)
+  title               String?        @db.VarChar(100)
+  description         String?        @db.VarChar(500)
+  processoId          Int?
+  valor_Inicial       Decimal?       @db.Decimal(10, 2)
+  valor_Final         Decimal?       @db.Decimal(10, 2)
+  marcar_venda        Boolean?
+  desconto            Decimal?       @db.Decimal(10, 2)
+  previsao_fechamento DateTime?
+  status              String?        @db.VarChar(50)
+  emailId             Int?
+  anotacoesId         Int?
+  contactsId          Int?
+  usersId             Int?
+  operador            String?        @db.VarChar(150)
+  created_at          DateTime?      @default(now())
+  updated_at          DateTime?      @updatedAt
+  metasId             Int?
+  vendaId             Int?           @unique
+  empresa             String?        @db.VarChar(100)
+  motivosId           Int?
+  produtoId           Int?
+  arquivado           Boolean?
+  anotacoes           anotacoes[]
+  arquivos            arquivos[]
+  email               email[]
+  log_taks            log_taks[]
+  sub_task            sub_task[]
+  Contacts            Contacts?      @relation(fields: [contactsId], references: [id])
+  metas               metas?         @relation(fields: [metasId], references: [id])
+  motivos             motivos?       @relation(fields: [motivosId], references: [id])
+  processo            processo?      @relation(fields: [processoId], references: [id])
+  Users               Users?         @relation(fields: [usersId], references: [id])
+  task_produto        task_produto[]
+  venda               venda?
+}
+
+model mensageria {
+  id                 Int       @id @default(autoincrement())
+  processo           String    @db.VarChar(20)
+  data_processamento DateTime?
+  data_envio         DateTime
+  created_at         DateTime? @default(now())
+  updated_at         DateTime? @updatedAt
+  tipo_msgId         Int?
+  emailId            Int?
+  smsId              Int?
+  email              email?    @relation(fields: [emailId], references: [id])
+  sms                sms?      @relation(fields: [smsId], references: [id])
+  tipo_msg           tipo_msg? @relation(fields: [tipo_msgId], references: [id])
+}
+
+model tipo_msg {
+  id           Int            @id @default(autoincrement())
+  tipo_msgm    String         @db.VarChar(20)
+  created_at   DateTime?      @default(now())
+  updated_at   DateTime?      @updatedAt
+  campanha_mkt campanha_mkt[]
+  mensageria   mensageria[]
+}
+
+model email {
+  id             Int           @id @default(autoincrement())
+  titulo         String        @db.VarChar(50)
+  from           String        @db.VarChar(50)
+  to             String        @db.VarChar(50)
+  html_body      String        @db.VarChar(10000)
+  data_envio     DateTime
+  taskId         Int?
+  campanha_mktId Int?
+  attachments    attachments[]
+  campanha_mkt   campanha_mkt? @relation(fields: [campanha_mktId], references: [id])
+  task           task?         @relation(fields: [taskId], references: [id])
+  mensageria     mensageria[]
+}
+
+model sms {
+  id             Int           @id @default(autoincrement())
+  titulo         String        @db.VarChar(50)
+  from           String        @db.VarChar(50)
+  to             String        @db.VarChar(50)
+  body           String        @db.VarChar(1000)
+  data_envio     DateTime
+  campanha_mktId Int?
+  mensageria     mensageria[]
+  campanha_mkt   campanha_mkt? @relation(fields: [campanha_mktId], references: [id])
+}
+
+model attachments {
+  id          Int       @id @default(autoincrement())
+  link        String?   @db.VarChar(500)
+  description String?   @db.VarChar(500)
+  emailId     Int?
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  email       email?    @relation(fields: [emailId], references: [id])
+}
+
+model arquivos {
+  id          Int       @id @default(autoincrement())
+  link        String?   @db.VarChar(500)
+  description String?   @db.VarChar(500)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  taskId      Int?
+  clienteId   Int?
+  cliente     cliente?  @relation(fields: [clienteId], references: [id])
+  task        task?     @relation(fields: [taskId], references: [id])
+}
+
+model anotacoes {
+  id          Int       @id @default(autoincrement())
+  title       String?   @db.VarChar(100)
+  description String?   @db.VarChar(500)
+  date        DateTime?
+  is_fav      Boolean?
+  tag         String?   @db.VarChar(100)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  taskId      Int?
+  task        task?     @relation(fields: [taskId], references: [id])
+}
+
+model log_taks {
+  id         Int       @id @default(autoincrement())
+  chave      String?   @db.VarChar(50)
+  valor      String?   @db.VarChar(50)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  taskId     Int?
+  task       task?     @relation(fields: [taskId], references: [id])
+}
+
+model sub_task {
+  id               Int       @id @default(autoincrement())
+  title            String?   @db.VarChar(50)
+  description      String?   @db.VarChar(500)
+  description_text String?   @db.VarChar(500)
+  priority         String?   @db.VarChar(50)
+  status           String?   @db.VarChar(500)
+  date_start       DateTime?
+  date_end         DateTime?
+  created_at       DateTime? @default(now())
+  updated_at       DateTime? @updatedAt
+  taskId           Int?
+  task             task?     @relation(fields: [taskId], references: [id])
+}
+
+model configuracaoCliente {
+  id                  Int                   @id @default(autoincrement())
+  logo_link           String?               @db.VarChar(500)
+  cover_link          String?               @db.VarChar(500)
+  nome_empresa        String?               @db.VarChar(150)
+  nome_fantasia       String?               @db.VarChar(150)
+  cnpj_cpf            String?               @db.VarChar(21)
+  telefone            String?               @db.VarChar(25)
+  responsavel         String?               @db.VarChar(25)
+  email               String?               @db.VarChar(150)
+  departamento        String?               @db.VarChar(150)
+  setor               String?               @db.VarChar(150)
+  created_at          DateTime?             @default(now())
+  updated_at          DateTime?             @updatedAt
+  logradouro          String?               @db.VarChar(150)
+  bairro              String?               @db.VarChar(150)
+  estado              String?               @db.VarChar(150)
+  cidade              String?               @db.VarChar(150)
+  pais                String?               @db.VarChar(150)
+  complemento         String?               @db.VarChar(150)
+  cep                 String?               @db.VarChar(25)
+  numero              String?               @db.VarChar(20)
+  Contacts            Contacts[]
+  Users               Users[]
+  campanha_mkt        campanha_mkt[]
+  categoria_produto   categoria_produto[]
+  cliente             cliente[]
+  formulario_dinamico formulario_dinamico[]
+  fornecedor          fornecedor[]
+  metas               metas[]
+  motivos             motivos[]
+  produto             produto[]
+  projeto             projeto[]
+  servico             servico[]
+  venda               venda[]
+}
+
+model cliente {
+  id                    Int                     @id @default(autoincrement())
+  nome                  String?                 @db.VarChar(200)
+  sobrenome             String?                 @db.VarChar(200)
+  email                 String?                 @db.VarChar(200)
+  empresa               String?                 @db.VarChar(150)
+  data_nascimento       DateTime?
+  cpf                   String?                 @db.VarChar(150)
+  cnpj                  String?                 @db.VarChar(150)
+  rg                    String?                 @db.VarChar(150)
+  telefone              String?                 @db.VarChar(25)
+  responsavel           String?                 @db.VarChar(25)
+  linkFoto              String?                 @db.VarChar(500)
+  sexoId                Int?
+  planoId               Int?
+  configuracaoClienteId Int?
+  cep                   String?                 @db.VarChar(25)
+  logradouro            String?                 @db.VarChar(150)
+  bairro                String?                 @db.VarChar(150)
+  estado                String?                 @db.VarChar(150)
+  cidade                String?                 @db.VarChar(150)
+  pais                  String?                 @db.VarChar(150)
+  complemento           String?                 @db.VarChar(150)
+  numero                String?                 @db.VarChar(20)
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @updatedAt
+  arquivos              arquivos[]
+  configuracaoCliente   configuracaoCliente?    @relation(fields: [configuracaoClienteId], references: [id])
+  sexo                  sexo?                   @relation(fields: [sexoId], references: [id])
+  historico_cliente     historico_cliente[]
+  lista_contato_cliente lista_contato_cliente[]
+}
+
+model historico_cliente {
+  id         Int       @id @default(autoincrement())
+  chave      String?   @db.VarChar(25)
+  valor      String?   @db.VarChar(500)
+  operador   String?   @db.VarChar(50)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  clienteId  Int?
+  cliente    cliente?  @relation(fields: [clienteId], references: [id])
+}
+
+model categoria_produto {
+  id                    Int                  @id @default(autoincrement())
+  codigo                String               @db.VarChar(150)
+  nome                  String               @db.VarChar(150)
+  detalhamento          String?              @db.VarChar(500)
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  operador              String               @db.VarChar(150)
+  configuracaoClienteId Int?
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  produto               produto[]
+}
+
+model produto {
+  id                  Int                  @id @default(autoincrement())
+  codigo              String               @db.VarChar(150)
+  nome                String               @db.VarChar(150)
+  detalhamento        String?              @db.VarChar(500)
+  link_img            String?              @db.VarChar(500)
+  qtd_estoque         Decimal?             @db.Decimal(10, 2)
+  preco_venda         Decimal?             @db.Decimal(10, 2)
+  ativo               Boolean?
+  created_at          DateTime?            @default(now())
+  updated_at          DateTime?            @updatedAt
+  operador            String               @db.VarChar(150)
+  categoria_produtoId Int?
+  clienteId           Int?
+  descricao           String?              @db.VarChar(500)
+  categoria_produto   categoria_produto?   @relation(fields: [categoria_produtoId], references: [id])
+  configuracaoCliente configuracaoCliente? @relation(fields: [clienteId], references: [id])
+  task_produto        task_produto[]
+}
+
+model servico {
+  id                  Int                  @id @default(autoincrement())
+  codigo              String               @db.VarChar(150)
+  nome                String               @db.VarChar(150)
+  detalhamento        String?              @db.VarChar(500)
+  valor_hora          Decimal              @db.Decimal(10, 2)
+  ativo               Boolean
+  created_at          DateTime?            @default(now())
+  updated_at          DateTime?            @updatedAt
+  operador            String?              @db.VarChar(150)
+  clienteId           Int?
+  configuracaoCliente configuracaoCliente? @relation(fields: [clienteId], references: [id])
+}
+
+model venda {
+  id                    Int                  @id @default(autoincrement())
+  valor_total           Decimal?             @db.Decimal(10, 2)
+  status                String               @default("venda") @db.VarChar(20)
+  configuracaoClienteId Int?
+  taskId                Int?                 @unique
+  usersId               Int?
+  created_at            DateTime?            @default(now())
+  updated_at            DateTime?            @updatedAt
+  configuracaoCliente   configuracaoCliente? @relation(fields: [configuracaoClienteId], references: [id])
+  task                  task?                @relation(fields: [taskId], references: [id])
+  Users                 Users?               @relation(fields: [usersId], references: [id])
+}
+
+model fornecedor {
+  id                  Int                  @id @default(autoincrement())
+  link_img            String?              @db.VarChar(500)
+  nome_responsavel    String?              @db.VarChar(200)
+  email               String?              @db.VarChar(200)
+  empresa             String?              @db.VarChar(150)
+  cnpj                String?              @db.VarChar(150)
+  telefone            String?              @db.VarChar(25)
+  celular             String?              @db.VarChar(25)
+  foto                String?              @db.VarChar(500)
+  ativo               Boolean?
+  created_at          DateTime?            @default(now())
+  updated_at          DateTime?            @updatedAt
+  operador            String?              @db.VarChar(150)
+  clienteId           Int?
+  configuracaoCliente configuracaoCliente? @relation(fields: [clienteId], references: [id])
+}
+
+model permissao_modulos {
+  id                  Int                   @id @default(autoincrement())
+  ver                 Boolean?
+  created_at          DateTime?             @default(now())
+  updated_at          DateTime?             @updatedAt
+  userId              Int?
+  moduloId            Int?
+  historico_permissao historico_permissao[]
+  modulo              modulo?               @relation(fields: [moduloId], references: [id])
+  Users               Users?                @relation(fields: [userId], references: [id])
+}
+
+model permissao_sub_modulos {
+  id                  Int                   @id @default(autoincrement())
+  editar              Boolean?
+  ver                 Boolean?
+  deletar             Boolean?
+  created_at          DateTime?             @default(now())
+  updated_at          DateTime?             @updatedAt
+  userId              Int?
+  subModuloId         Int?
+  historico_permissao historico_permissao[]
+  subModulo           subModulo?            @relation(fields: [subModuloId], references: [id])
+  Users               Users?                @relation(fields: [userId], references: [id])
+}
+
+model historico_permissao {
+  id                      Int                    @id @default(autoincrement())
+  operador                String?                @db.VarChar(150)
+  descricao               String?                @db.VarChar(150)
+  created_at              DateTime?              @default(now())
+  updated_at              DateTime?              @updatedAt
+  permissao_modulosId     Int?
+  permissao_sub_modulosId Int?
+  permissao_modulos       permissao_modulos?     @relation(fields: [permissao_modulosId], references: [id])
+  permissao_sub_modulos   permissao_sub_modulos? @relation(fields: [permissao_sub_modulosId], references: [id])
+}
+
+model modulo {
+  id                Int                 @id @default(autoincrement())
+  nome              String?             @db.VarChar(150)
+  url               String?             @db.VarChar(150)
+  ativo             Boolean?
+  ordem             Int?
+  icon              String?             @db.VarChar(51)
+  created_at        DateTime?           @default(now())
+  updated_at        DateTime?           @updatedAt
+  permissao_modulos permissao_modulos[]
+  subModulo         subModulo[]
+}
+
+model subModulo {
+  id                    Int                     @id @default(autoincrement())
+  nome                  String?                 @db.VarChar(150)
+  url                   String?                 @db.VarChar(150)
+  ativo                 Boolean?
+  icon                  String?                 @db.VarChar(40)
+  ordem                 Int?
+  moduloId              Int?
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @updatedAt
+  permissao_sub_modulos permissao_sub_modulos[]
+  modulo                modulo?                 @relation(fields: [moduloId], references: [id])
+
+  @@map("sub_modulo")
+}
+
+model sexo {
+  id         Int       @id @default(autoincrement())
+  descricao  String?   @db.VarChar(11)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+  Users      Users[]
+  cliente    cliente[]
+
+  @@map("sexo_enum")
+}
+
+model opcao {
+  id         Int       @id @default(autoincrement())
+  descricao  String?   @db.VarChar(11)
+  Opcao      Boolean?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+}
+
+model TipoUsuario {
+  id         Int       @id @default(autoincrement())
+  descricao  String?   @db.VarChar(21)
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("tipo_usuario_enum")
+}
+
+model Contacts {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.VarChar(255)
+  number                String?                 @db.VarChar(255)
+  profilePicUrl         String?
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @updatedAt
+  email                 String?                 @db.VarChar(255)
+  configuracaoClienteId Int?
+  logradouro            String?                 @db.VarChar(150)
+  bairro                String?                 @db.VarChar(150)
+  estado                String?                 @db.VarChar(150)
+  cidade                String?                 @db.VarChar(150)
+  pais                  String?                 @db.VarChar(150)
+  complemento           String?                 @db.VarChar(150)
+  numero                String?                 @db.VarChar(20)
+  cep                   String?                 @db.VarChar(25)
+  configuracaoCliente   configuracaoCliente?    @relation(fields: [configuracaoClienteId], references: [id])
+  lista_contato_cliente lista_contato_cliente[]
+  task                  task[]
+}
+
+model Users {
+  id                    Int                     @id @default(autoincrement())
+  sobrenome             String?                 @db.VarChar(200)
+  empresa               String?                 @db.VarChar(150)
+  cpf                   String?                 @db.VarChar(150)
+  telefone              String?                 @db.VarChar(25)
+  linkFoto              String?                 @db.VarChar(500)
+  isAdmin               Boolean?
+  themeDark             Boolean?
+  operador              String?                 @db.VarChar(150)
+  sexoId                Int?
+  clienteId             Int?
+  name                  String?                 @db.VarChar(255)
+  email                 String?                 @unique @db.VarChar(255)
+  profile               String?                 @default("admin") @db.VarChar(255)
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @updatedAt
+  timesId               Int?
+  logradouro            String?                 @db.VarChar(150)
+  bairro                String?                 @db.VarChar(150)
+  estado                String?                 @db.VarChar(150)
+  cidade                String?                 @db.VarChar(150)
+  pais                  String?                 @db.VarChar(150)
+  complemento           String?                 @db.VarChar(150)
+  numero                String?                 @db.VarChar(20)
+  primeiro_acesso       Boolean?
+  gerente_conta         Boolean?
+  termos                Boolean?
+  configuracaoCliente   configuracaoCliente?    @relation(fields: [clienteId], references: [id])
+  sexo                  sexo?                   @relation(fields: [sexoId], references: [id])
+  times                 times?                  @relation(fields: [timesId], references: [id])
+  permissao_modulos     permissao_modulos[]
+  permissao_sub_modulos permissao_sub_modulos[]
+  task                  task[]
+  venda                 venda[]
+}
+
+model cliente_produto {
+  id        Int       @id @default(autoincrement())
+  nome      String?   @db.VarChar(200)
+  sobrenome String?   @db.VarChar(200)
+  email     String?   @db.VarChar(200)
+  cpf       String?   @db.VarChar(150)
+  telefone  String?   @db.VarChar(25)
+  link_img  String?   @db.VarChar(500)
+  createdAt DateTime? @db.Timestamptz(6)
+  updatedAt DateTime? @db.Timestamptz(6)
+}
